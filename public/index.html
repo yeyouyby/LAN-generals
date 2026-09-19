@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LAN-generals ⚔️ 局域网将军棋</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♛</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">♛ <span>LAN-generals</span></div>
+  <div class="addr" id="addrBadge" title="把这个地址发给同一 WiFi 下的朋友">…</div>
+  <div class="top-right">
+    <input id="nameInput" maxlength="12" placeholder="你的名字" autocomplete="off">
+    <button id="soundBtn" class="icon-btn" title="声音开关">🔊</button>
+    <button id="helpBtn" class="icon-btn" title="玩法说明">❓</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ 大厅 ============ -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby-grid">
+      <div class="card">
+        <h2>🏠 创建房间</h2>
+        <label>房间名 <input id="roomNameInput" maxlength="20" placeholder="默认：XXX的房间" autocomplete="off"></label>
+        <div class="form-row">
+          <label>人数
+            <select id="maxPlayersSel">
+              <option value="2">2 人</option>
+              <option value="3">3 人</option>
+              <option value="4" selected>4 人</option>
+              <option value="5">5 人</option>
+              <option value="6">6 人</option>
+              <option value="7">7 人</option>
+              <option value="8">8 人</option>
+            </select>
+          </label>
+          <label>地图
+            <select id="mapSel">
+              <option value="adaptive" selected>自适应</option>
+              <option value="small">小（15×15）</option>
+              <option value="medium">中（20×20）</option>
+              <option value="large">大（26×26）</option>
+            </select>
+          </label>
+          <label>速度
+            <select id="speedSel">
+              <option value="slow">慢速</option>
+              <option value="normal" selected>标准</option>
+              <option value="fast">快速</option>
+            </select>
+          </label>
+        </div>
+        <button id="createBtn" class="btn primary">创建房间</button>
+        <p class="tip">💡 人不够？进房后可加电脑（AI），1 个人也能玩！</p>
+      </div>
+
+      <div class="card">
+        <h2>🎮 房间列表 <button id="refreshBtn" class="btn small">刷新</button></h2>
+        <div id="roomList"><p class="dim">正在获取房间…</p></div>
+      </div>
+
+      <div class="card howto">
+        <h2>📖 怎么玩</h2>
+        <ol>
+          <li>一人开服（<code>npm start</code>），同 WiFi 的朋友浏览器打开顶部地址</li>
+          <li>创建 / 加入房间，凑齐 2 人以上（可加电脑凑数）开战</li>
+          <li>扩张地盘、攻占城市 <b>◆</b> 增兵，抓住敌方将军 <b>♛</b> 即接管其全部土地</li>
+          <li>活到最后就是赢家！</li>
+        </ol>
+        <p class="dim">操作：点击/方向键行军 · Z 撤销 · X 清空队列 · Shift+点击半数出兵</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 房间 ============ -->
+  <section id="screen-room" class="screen" hidden>
+    <div class="room-grid">
+      <div class="card">
+        <h2 id="roomTitle">房间</h2>
+        <p class="dim" id="roomMeta"></p>
+        <div id="playerList"></div>
+        <div class="btn-row">
+          <button id="readyBtn" class="btn">准备</button>
+          <button id="startBtn" class="btn primary">开始游戏</button>
+          <button id="addBotBtn" class="btn">+ 电脑</button>
+          <button id="leaveRoomBtn" class="btn danger-ghost">离开</button>
+        </div>
+        <p class="tip" id="roomTip"></p>
+      </div>
+      <div class="card chat-card">
+        <h2>💬 聊天</h2>
+        <div id="roomChatLog" class="chat-log"></div>
+        <div class="chat-input-row">
+          <input id="roomChatInput" maxlength="200" placeholder="回车发送…" autocomplete="off">
+          <button id="roomChatSend" class="btn small">发送</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 对局 ============ -->
+  <section id="screen-game" class="screen" hidden>
+    <div class="game-wrap">
+      <div class="board-col">
+        <div id="turnBar">
+          <span id="turnInfo">回合 0</span>
+          <span id="roundInfo" class="dim"></span>
+          <span id="queueInfo" class="dim"></span>
+          <span id="roleBadge"></span>
+        </div>
+        <div id="dangerBanner" hidden>⚠️ 将军受到威胁！速速回防！</div>
+        <div class="canvas-wrap"><canvas id="board"></canvas></div>
+        <div class="btn-row controls">
+          <button id="halfBtn" class="btn toggle" title="出兵只派一半（快捷键 Q）">½ 出兵</button>
+          <button id="undoBtn" class="btn" title="撤销一步（Z）">↩ 撤销</button>
+          <button id="clearBtn" class="btn" title="清空队列（X）">✖ 清空</button>
+          <button id="surrenderBtn" class="btn danger-ghost" title="投降认输">🏳 投降</button>
+          <button id="leaveGameBtn" class="btn danger-ghost" title="离开房间（将由电脑托管）">🚪 离开</button>
+        </div>
+        <p class="hint dim">点击己方格选中 → 点击目标行军（自动寻路）· 方向键/WASD 连续行军 · Z 撤销 · X 清空 · Q/Shift 半数出兵</p>
+      </div>
+      <aside class="side-col">
+        <div class="card">
+          <h2>🏆 战况</h2>
+          <div id="scoreList"></div>
+        </div>
+        <div class="card chat-card">
+          <h2>💬 聊天</h2>
+          <div id="gameChatLog" class="chat-log small"></div>
+          <div class="chat-input-row">
+            <input id="gameChatInput" maxlength="200" placeholder="回车发送…" autocomplete="off">
+            <button id="gameChatSend" class="btn small">发送</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<div id="toasts"></div>
+
+<div id="modal" hidden>
+  <div class="modal-box">
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div class="btn-row" id="modalBtns"></div>
+  </div>
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

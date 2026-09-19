@@ -1,0 +1,16 @@
+{
+  "name": "lan-generals",
+  "version": "1.0.0",
+  "description": "局域网联机小游戏：generals.io 玩法复刻，同一 WiFi 下打开浏览器即玩",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/simulate.js && node test/integration.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
