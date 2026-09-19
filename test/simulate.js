@@ -110,6 +110,11 @@ console.log('✓ 投降测试通过');
   const gen = g.players[0].general;
   assert.strictEqual(v.owner[gen], 0, '己方将军营应可见');
   assert.strictEqual(v.terrain[gen], T_GENERAL);
+  // 行军轨迹同样受迷雾过滤，黑暗中的敌军箭头不能被客户端收到。
+  const hiddenFrom = g.terrain.findIndex((_, i) => v.terrain[i] === FOG_TERRAIN);
+  const hiddenTo = g._neighbors(hiddenFrom).find((i) => v.terrain[i] === FOG_TERRAIN);
+  g.lastMoves = [{ from: hiddenFrom, to: hiddenTo, by: 1 }];
+  assert.strictEqual(g.viewFor(0).lastMoves.length, 0, '迷雾中的行军箭头应被隐藏');
   const full = g.fullView();
   assert.ok(!full.terrain.includes(FOG_TERRAIN), '上帝视角不应有迷雾');
   assert.ok(!full.owner.includes(FOG_OWNER), '上帝视角不应有迷雾归属');
