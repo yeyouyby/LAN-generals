@@ -715,44 +715,21 @@ function renderBoard() {
     ctx.fillStyle = bg;
     ctx.fillRect(x, y, TILE, TILE);
 
-    // 文字 / 图标
+    // 图标使用 Canvas 矢量绘制，不依赖 emoji 字体；在手机和局域网不同系统上也保持一致。
     if (ter === T_MOUNTAIN) {
-      ctx.fillStyle = '#7d8aa0';
-      ctx.font = `${Math.max(9, TILE * 0.52)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('▲', x + TILE / 2, y + TILE / 2 + 1);
+      drawMountain(x, y);
     } else if (ter !== FOG_T && own !== FOG_O) {
       const isHQ = ter === T_GENERAL;
       const isCity = ter === T_CITY;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      if (TILE >= 30 && (isHQ || isCity)) {
-        ctx.fillStyle = own === NEUTRAL ? '#e0b64f' : '#fff';
-        ctx.font = `bold ${Math.round(TILE * 0.3)}px sans-serif`;
-        ctx.fillText(isHQ ? '♛' : '◆', x + TILE / 2, y + TILE * 0.3);
-        if (arm > 0) {
-          ctx.fillStyle = '#fff';
-          ctx.font = `bold ${Math.round(TILE * 0.3)}px sans-serif`;
-          ctx.shadowColor = 'rgba(0,0,0,.7)';
-          ctx.shadowBlur = 3;
-          ctx.fillText(String(arm), x + TILE / 2, y + TILE * 0.72);
-          ctx.shadowBlur = 0;
-        }
-      } else {
-        if (arm > 0 && TILE >= 13) {
-          ctx.fillStyle = own === NEUTRAL ? '#aeb8cc' : '#fff';
-          ctx.font = `bold ${Math.round(Math.min(16, TILE * 0.42))}px sans-serif`;
-          ctx.shadowColor = 'rgba(0,0,0,.7)';
-          ctx.shadowBlur = 3;
-          ctx.fillText(String(arm), x + TILE / 2, y + TILE / 2 + 1);
-          ctx.shadowBlur = 0;
-        }
-        if ((isHQ || isCity) && TILE >= 13) {
-          ctx.fillStyle = own === NEUTRAL ? '#e0b64f' : 'rgba(255,255,255,.9)';
-          ctx.font = `${Math.round(Math.min(11, TILE * 0.26))}px sans-serif`;
-          ctx.fillText(isHQ ? '♛' : '◆', x + TILE / 2, y + TILE * 0.2);
-        }
+      if (isHQ && TILE >= 11) drawGeneral(x, y, own === NEUTRAL ? '#e7c45c' : '#f4f7fb');
+      if (isCity && TILE >= 11) drawCity(x, y, own === NEUTRAL ? '#e7c45c' : '#f4f7fb');
+      if (arm > 0 && TILE >= 12) {
+        ctx.fillStyle = own === NEUTRAL ? '#d5dbe6' : '#fff';
+        ctx.font = `800 ${Math.round(Math.min(15, TILE * 0.42))}px Arial, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,.72)'; ctx.shadowBlur = 3;
+        ctx.fillText(String(arm), x + TILE / 2, y + TILE * (isHQ || isCity ? 0.72 : 0.53));
+        ctx.shadowBlur = 0;
       }
     }
   }
@@ -803,6 +780,37 @@ function renderBoard() {
     ctx.lineWidth = 1.5;
     ctx.strokeRect((HOVER % G.w) * TILE + 1, ((HOVER / G.w) | 0) * TILE + 1, TILE - 2, TILE - 2);
   }
+}
+
+function drawMountain(x, y) {
+  const cx = x + TILE / 2;
+  ctx.fillStyle = '#111820';
+  ctx.beginPath(); ctx.moveTo(x + TILE * .12, y + TILE * .82); ctx.lineTo(cx, y + TILE * .16);
+  ctx.lineTo(x + TILE * .9, y + TILE * .82); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#8290a2';
+  ctx.beginPath(); ctx.moveTo(cx, y + TILE * .16); ctx.lineTo(cx - TILE * .16, y + TILE * .52);
+  ctx.lineTo(cx, y + TILE * .46); ctx.lineTo(cx + TILE * .16, y + TILE * .52); ctx.closePath(); ctx.fill();
+}
+
+function drawCity(x, y, color) {
+  const pad = TILE * .2;
+  ctx.fillStyle = color;
+  ctx.fillRect(x + pad, y + TILE * .34, TILE - pad * 2, TILE * .42);
+  ctx.fillRect(x + TILE * .28, y + TILE * .22, TILE * .14, TILE * .22);
+  ctx.fillRect(x + TILE * .58, y + TILE * .17, TILE * .14, TILE * .27);
+  ctx.fillStyle = 'rgba(10,14,20,.72)';
+  ctx.fillRect(x + TILE * .43, y + TILE * .55, TILE * .14, TILE * .21);
+}
+
+function drawGeneral(x, y, color) {
+  const cx = x + TILE / 2;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x + TILE * .18, y + TILE * .27); ctx.lineTo(x + TILE * .34, y + TILE * .43);
+  ctx.lineTo(x + TILE * .5, y + TILE * .25); ctx.lineTo(x + TILE * .66, y + TILE * .43);
+  ctx.lineTo(x + TILE * .82, y + TILE * .27); ctx.lineTo(x + TILE * .72, y + TILE * .68);
+  ctx.lineTo(x + TILE * .28, y + TILE * .68); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(10,14,20,.75)'; ctx.fillRect(cx - TILE * .16, y + TILE * .52, TILE * .32, TILE * .13);
 }
 
 function centerOf(i) {

@@ -311,3 +311,15 @@ label input, label select { display: block; width: 100%; margin-top: 4px; }
   .side-col { grid-template-columns: 1fr; }
   .screen { padding: 10px; }
 }
+
+/* generals.io 风格：低饱和深色界面，棋盘承担视觉焦点 */
+:root {
+  --bg: #0b1017;
+  --card: #151d27;
+  --line: #293646;
+  --accent: #4d9aff;
+}
+.brand { letter-spacing: .2px; text-shadow: 0 1px 0 #000; }
+.canvas-wrap { background: #080c11; border-color: #354355; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+#board { image-rendering: auto; }
+.btn, .icon-btn { box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
