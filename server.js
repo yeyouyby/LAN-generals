@@ -36,8 +36,8 @@ function uid(prefix) {
   return prefix + crypto.randomBytes(4).toString('hex').toUpperCase();
 }
 
-function cleanName(s, fallback) {
-  s = String(s || '').trim().slice(0, 12);
+function cleanName(s, fallback, max = 12) {
+  s = String(s || '').trim().slice(0, max);
   return s || fallback;
 }
 
@@ -367,7 +367,7 @@ function handleMessage(client, raw) {
       const speed = SPEEDS[msg.speed] ? msg.speed : 'normal';
       const r = {
         id: uid('R'),
-        name: cleanName(msg.roomName, `${client.name}的房间`).slice(0, 20),
+        name: cleanName(msg.roomName, `${client.name}的房间`, 20),
         hostId: client.id,
         status: 'waiting',
         config: { maxPlayers, mapSize, speed },
